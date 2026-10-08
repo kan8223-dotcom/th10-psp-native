@@ -50,3 +50,17 @@ SND0 の手直し：POP-FE（sahlberg/pop-fe の riff.py、XMB 用 SND0.AT3 を 
 ## 実機（PSP-1000、2026-10-08）
 
 a65b546f を 1000 の TH10T（正式版 40 と入れ替え、データはフォルダ内、th10run.txt に --data なし）へ。機種 0 → 1000 用（GE4 補助は書き出さない）、データは EBOOT のフォルダから見つけた。生成は全体 26.7 秒、うち SND0 のエンコード 21.4 秒（API 333 MHz、ランタイムの実測は 459 MHz）。ランタイム r41b の room_start は 21.23 MB（正式版 40 は 21.24 MB）、確保失敗 0、最大使用 17.6 MB。XMB に絵と曲が出た（目視）。これで Go・1000 の両方で合格。
+
+## 文字の表を MS ゴシックから作る（2026-10-08、v1.1.0 候補）
+
+配布物の表は Noto 版（v1.0.1 から同梱）。
+
+- 動き：XMB の手順の前に、データのフォルダ（th10run.txt の `--data`、無ければ EBOOT のフォルダ。ランタイムの `TH10_GAME_DIR` と同じ決め方）に `msgothic.ttc` があり、`th10_font32.bin` が無いか同梱の Noto 版（1,015,544 B・CRC32 9DE870BA）のときだけ作る。それ以外の表は利用者のものとして触らない（2 回目以降の起動はファイルの大きさを見るだけ）。
+- 作り方：`text_table.cpp` が Pillow 12.1.1 の `_imagingft.c` の手順をそのままなぞる（`FT_Request_Size` 32px、RAQM 経由の送り幅＝ヒントなし、外枠は CBox＋ペンの線＋ベースライン、描画は `FT_LOAD_RENDER` のビットマップ位置、データは文字一覧の順、表はコード順）。cp932→Unicode は Python の codec で作った `charset_th10_unicode.inc`（`tools/fonts/gen_charset_unicode.py`、1,135 コード・変換不可 11）。
+- FreeType：PSPDEV の 2.11.0 では、字の箱は 1,124 字すべて同じだが、999 字・9,776 画素で濃さが ±1/255 ずれた（2.11→2.14 のラスタライザの差）。Pillow と同じ 2.14.1 の一部（TrueType・SFNT・smooth・base）を `native/third_party/freetype/` に同梱し、LZW/zlib だけ切った `ftoption.h` でビルドして解消。ランチャーは 2.85 MB → 2.30 MB（PSPDEV 版が引き込む bzip2・png が消えた）。
+- 書き込み：`th10_font32.tmp` に書いて読み戻しの CRC を照合 → Noto 版を `th10_font32_noto.bin` に改名 → tmp を `th10_font32.bin` に改名。失敗したら Noto 版を元の名前に戻す。生成中は 333 MHz と進捗バー。失敗（MS ゴシックでない・TrueType でない・メモリ）は理由を 4 秒出して、今の表のまま本体へ進む。
+- 検証：
+  - PC：`host_check/build_text_table_check.sh` の `text_table_check` が、Pillow 同梱の FreeType でも同梱の 2.14.1 でも PC の表（sha256 8b78322d、958,216 B）と SAME。
+  - Linux ヘッドレス PPSSPP（機種 1）：ZIP を展開した状態＋`msgothic.ttc` で初回起動 → 表は 8b78322d と一致、Noto 版は `th10_font32_noto.bin` に残る、生成 1.18 秒（読み込み 0.10 秒・字 0.49 秒）、続けて XMB 生成 17.4 秒。2 回目は「kept」で何もしない。Noto の CFF フォントを `msgothic.ttc` の名前で置く → 「TrueType ではない」で止まり表は Noto のまま。MS 明朝を置く → 「MS Gothic ではない」で止まる。`msgothic.ttc` が無ければ何もしない。
+  - Windows PPSSPP（機種 0＝1000 のメモリ）：生成 0.96 秒、表は 8b78322d、本体（th10-v1.0.1-1000）はデモ 3000 tick を確保失敗 0 で完走。
+- 実機（PSP-1000、2026-10-08、EBOOT 57b7fb36）：TH10T に同梱 Noto 表＋`msgothic.ttc` を置いて初回起動 → 生成 1.88 秒（読み込み 0.52 秒・字 0.70 秒、333 MHz）、表は 8b78322d（PC・PPSSPP と同じ）、Noto 版は `th10_font32_noto.bin` に残った。続けて XMB 生成 26.1 秒（SND0 20.9 秒）。本体 th10-v1.1.0-1000 は確保失敗 0・`font_missing_glyphs=0`、表は volatile 区画（in_use 1,696,640・退避 0）。

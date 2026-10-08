@@ -34,6 +34,7 @@ Everything listed below keeps its own terms; the root `LICENSE` does not relicen
 | Berkeley SoftFloat 3e (John R. Hauser, The Regents of the University of California) | `th10_web/cpp/rebuild/third_party/softfloat.c` | BSD-3-Clause | notices in the file and in `th10-rebuilt.LICENSE` |
 | PSP Media Engine Custom Core (MECC) by m-c/d | `native/psp/third_party/me-custom-core/` | MIT (`LICENSE.md` there) | from [mcidclan/psp-media-engine-custom-core](https://github.com/mcidclan/psp-media-engine-custom-core) (around `7dbf492`, 2026-08-20), carried and modified by the author's TH07/TH08 PSP ports; not identical to any upstream commit |
 | atracdenc (Daniil Cherednik) — ATRAC3 encoder subset | `native/third_party/atracdenc/` | LGPL-2.1-or-later (`LICENSE` there) | upstream commit and the three local changes are in `native/third_party/atracdenc/README.md`; statically linked into the launcher, whose complete source is this repository, so it can be rebuilt and relinked |
+| FreeType 2.14.1 (The FreeType Project) — TrueType driver, SFNT tables, smooth renderer | `native/third_party/freetype/` | FreeType License (FTL), chosen from FTL / GPL v2 (`docs/FTL.TXT` there) | statically linked into the launcher, which makes the text table from the user's own MS Gothic; local options in `native/third_party/freetype/README.md`. Portions of this software are copyright © 2025 The FreeType Project (https://freetype.org). All rights reserved. |
 | KISS FFT (Mark Borgerding) | `native/third_party/atracdenc/src/lib/fft/kissfft_impl/` | BSD-3-Clause | part of the atracdenc subset |
 | FFmpeg ATRAC3plus tables (Maxim Poliakovski) | `native/third_party/atracdenc/src/atrac/at3p/ff/atrac3plus_data.h` | LGPL-2.1-or-later | as shipped by atracdenc |
 | libpng | PSPDEV toolchain (`-lpng16`, launcher) | PNG Reference Library License v2 | text in `licenses/libpng.txt` |
@@ -66,10 +67,12 @@ PSPSDK's `pspimport.s` macros; no file of a CFW SDK is used.
   root `LICENSE` (MIT) does not apply to it. License text:
   `licenses/NotoSansJP/OFL.txt`; source file, tools and changes:
   `licenses/NotoSansJP/FONTLOG-TH10PSP.txt`.
-- A table made with `tools/fonts/make_font_msgothic.py` from MS Gothic of the user's
-  own Windows is for personal use only: it is not in this repository or the releases,
-  and must not be redistributed. `tools/unified/check_no_original_assets.py` accepts
-  only the Noto table, by its SHA-256.
+- A table made from MS Gothic of the user's own Windows, on the PSP by the launcher
+  (from `msgothic.ttc` placed next to the game data) or on a PC with
+  `tools/fonts/make_font_msgothic.py`, is for personal use only: neither `msgothic.ttc`
+  nor such a table is in this repository or the releases, and they must not be
+  redistributed. `tools/unified/check_no_original_assets.py` accepts only the Noto
+  table, by its SHA-256, and rejects `msgothic.ttc` and any other `.ttc`.
 
 ## Testing tools (not distributed)
 

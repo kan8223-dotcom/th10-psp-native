@@ -9,7 +9,9 @@ export PATH PSPDEV PSPSDK
 
 TARGET := th10_unified_launcher
 include atracdenc.mk
-OBJS := main.o model_dispatch.o xmb_selfwrap.o xmb_sound.o $(ATRAC_OBJS)
+include freetype.mk
+OBJS := main.o model_dispatch.o text_table.o xmb_selfwrap.o xmb_sound.o $(ATRAC_OBJS) \
+	$(FREETYPE_OBJS)
 EXTRA_TARGETS := EBOOT.PBP
 BUILD_PRX := 1
 PSP_FW_VERSION := 660
@@ -37,8 +39,10 @@ CXXFLAGS := -std=gnu++17 -fno-exceptions -fno-rtti
 ASFLAGS := $(CFLAGS)
 # KUBridge (the model) and SystemCtrlForUser (LoadExec) from our own stubs.
 include ../psp_cfw/cfw_imports.mk
-EXTRA_CLEAN := $(CFW_LIBS) $(wildcard $(CFW_OUT)/*.o)
+EXTRA_CLEAN := $(CFW_LIBS) $(wildcard $(CFW_OUT)/*.o) $(FREETYPE_OBJS)
 LIBS := $(CFW_LIBS) -lpng16 -lz -lstdc++ -lpsppower
 
 include $(PSPSDK)/lib/build.mak
 $(TARGET).elf: $(CFW_LIBS)
+text_table.o: charset_th10_unicode.inc text_table.hpp
+main.o: text_table.hpp

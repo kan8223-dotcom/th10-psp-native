@@ -1,5 +1,6 @@
 #include "container_format.h"
 #include "model_dispatch.hpp"
+#include "text_table.hpp"
 #include "xmb_selfwrap.hpp"
 
 #include <pspctrl.h>
@@ -13,6 +14,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 PSP_MODULE_INFO("TH10UNIFIED", 0, 1, 0);
@@ -911,6 +913,208 @@ int load_exec_path(const char *path, const char *device,
                : sctrlKernelLoadExecVSHMs2(path, &parameters);
 }
 
+// The text table from the user's own MS Gothic. When msgothic.ttc sits next
+// to th10.dat and th10_font32.bin is missing or still the release's Noto
+// table, the table is made here (text_table.cpp: the same bytes as
+// tools/fonts/make_font_msgothic.py) and the Noto table is kept as
+// th10_font32_noto.bin. Any other table is the user's own and is left alone.
+const uint32_t kNotoTableBytes = 1015544u;
+const uint32_t kNotoTableCrc32 = 0x9DE870BAu;
+const uint32_t kMaxFontFileBytes = 32u * 1024u * 1024u;
+const unsigned int kFontReadChunk = 1024u * 1024u;
+unsigned int g_text_table_permille = 0u;
+
+// Progress: reading 0-10%, glyphs 10-95%, writing and checking the rest.
+void text_table_progress(unsigned int done, unsigned int total)
+{
+    const unsigned int permille = 100u + (total != 0u ? done * 850u / total : 0u);
+    if (permille != g_text_table_permille) {
+        g_text_table_permille = permille;
+        draw_progress(permille);
+    }
+}
+
+void show_text_table_notice()
+{
+    pspDebugScreenClear();
+    pspDebugScreenSetTextColor(0xffffffffu);
+    pspDebugScreenPrintf("Touhou 10 PSP\n\n");
+    pspDebugScreenSetTextColor(0xff80ffffu);
+    pspDebugScreenPrintf("Making the text table from MS Gothic (msgothic.ttc)...\n");
+    pspDebugScreenSetTextColor(0xff8080ffu);
+    pspDebugScreenPrintf("Do not turn off the PSP.\n");
+    pspDebugScreenSetTextColor(0xffffffffu);
+    g_progress_start = sceKernelGetSystemTimeWide();
+    g_text_table_permille = 0u;
+    draw_progress(0u);
+}
+
+void text_table_failed(const char *step, int result)
+{
+    log_line("TEXT TABLE failed step=%s result=0x%08X", step,
+             static_cast<unsigned int>(result));
+    pspDebugScreenSetXY(0, 7);
+    pspDebugScreenSetTextColor(0xff8080ffu);
+    pspDebugScreenPrintf("Could not make it: %s (0x%08X).\n", step,
+                         static_cast<unsigned int>(result));
+    pspDebugScreenPrintf("The current text table stays in use.\n");
+    pspDebugScreenSetTextColor(0xffffffffu);
+    sceKernelDelayThread(4000000);
+}
+
+// The whole font in 1 MiB reads (no run of tiny reads: TH08 r141, PSP Go).
+int read_font_file(const char *path, uint32_t size, unsigned char *buffer)
+{
+    const SceUID file = sceIoOpen(path, PSP_O_RDONLY, 0);
+    if (file < 0)
+        return file;
+    int result = 0;
+    uint32_t done = 0u;
+    while (result == 0 && done < size) {
+        const uint32_t chunk = size - done < kFontReadChunk ? size - done : kFontReadChunk;
+        result = read_exact(file, buffer + done, chunk);
+        if (result == 0) {
+            done += chunk;
+            draw_progress(static_cast<unsigned int>(
+                static_cast<uint64_t>(done) * 100u / size));
+        }
+    }
+    const int close_result = sceIoClose(file);
+    return result < 0 ? result : (close_result < 0 ? close_result : 0);
+}
+
+int write_table_verified(const char *path, const unsigned char *data,
+                         uint32_t bytes, const char *device)
+{
+    int result = remove_regular_if_present(path);
+    if (result < 0)
+        return result;
+    const SceUID file = sceIoOpen(path, PSP_O_WRONLY | PSP_O_CREAT | PSP_O_TRUNC, 0777);
+    if (file < 0)
+        return file;
+    result = write_all(file, data, bytes);
+    const int close_result = sceIoClose(file);
+    if (result == 0 && close_result < 0)
+        result = close_result;
+    if (result == 0 && sceIoSync(device, 0) < 0)
+        result = -73;
+    uint32_t crc = 0u;
+    bool matches_size = false;
+    if (result == 0)
+        result = hash_regular_file(path, bytes, &crc, &matches_size);
+    if (result == 0 &&
+        (!matches_size || crc != (crc32_update(0xffffffffu, data, bytes) ^ 0xffffffffu)))
+        result = -74;
+    if (result < 0)
+        remove_regular_if_present(path);
+    return result;
+}
+
+void make_text_table_if_asked(const char *appdir, const char *device)
+{
+    char root[kPathBytes];
+    if (th10_unified_find_original_data == NULL ||
+        th10_unified_find_original_data(appdir, device, root, sizeof(root)) <= 0)
+        return;
+    char font[kPathBytes], table[kPathBytes], temporary[kPathBytes], noto[kPathBytes];
+    if (snprintf(font, kPathBytes, "%s/msgothic.ttc", root) >= static_cast<int>(kPathBytes) ||
+        snprintf(table, kPathBytes, "%s/th10_font32.bin", root) >= static_cast<int>(kPathBytes) ||
+        snprintf(temporary, kPathBytes, "%s/th10_font32.tmp", root) >= static_cast<int>(kPathBytes) ||
+        snprintf(noto, kPathBytes, "%s/th10_font32_noto.bin", root) >= static_cast<int>(kPathBytes))
+        return;
+    uint64_t font_size = 0u, table_size = 0u;
+    bool font_exists = false, table_exists = false;
+    if (stat_regular(font, &font_size, &font_exists) < 0 || !font_exists)
+        return;
+    if (stat_regular(table, &table_size, &table_exists) < 0)
+        return;
+    if (table_exists) {
+        uint32_t crc = 0u;
+        bool matches_size = false;
+        if (hash_regular_file(table, kNotoTableBytes, &crc, &matches_size) < 0)
+            return;
+        if (!matches_size || crc != kNotoTableCrc32) {
+            log_line("TEXT TABLE kept: %s is not the release's Noto table", table);
+            return;
+        }
+    }
+
+    show_text_table_notice();
+    scePowerSetClockFrequency(333, 333, 166);
+    const SceInt64 start = sceKernelGetSystemTimeWide();
+    if (font_size == 0u || font_size > kMaxFontFileBytes) {
+        text_table_failed("msgothic.ttc size", -70);
+        return;
+    }
+    unsigned char *ttc = static_cast<unsigned char *>(malloc(static_cast<size_t>(font_size)));
+    if (ttc == NULL) {
+        text_table_failed("memory", -71);
+        return;
+    }
+    int result = read_font_file(font, static_cast<uint32_t>(font_size), ttc);
+    if (result < 0) {
+        free(ttc);
+        text_table_failed("reading msgothic.ttc", result);
+        return;
+    }
+    const SceInt64 read_end = sceKernelGetSystemTimeWide();
+    unsigned char *made = NULL;
+    size_t made_bytes = 0u;
+    result = th10_text_table_build(ttc, static_cast<size_t>(font_size), &made,
+                                   &made_bytes, text_table_progress);
+    free(ttc);
+    if (result != TH10_TEXT_TABLE_OK) {
+        text_table_failed(result == TH10_TEXT_TABLE_NOT_MS_GOTHIC ? "msgothic.ttc is not MS Gothic"
+                          : result == TH10_TEXT_TABLE_FREETYPE    ? "msgothic.ttc is not a TrueType font"
+                          : result == TH10_TEXT_TABLE_NO_MEMORY   ? "memory"
+                                                                  : "making the glyphs",
+                          result);
+        return;
+    }
+    const SceInt64 build_end = sceKernelGetSystemTimeWide();
+    const uint32_t made_crc =
+        crc32_update(0xffffffffu, made, static_cast<unsigned int>(made_bytes)) ^ 0xffffffffu;
+    result = write_table_verified(temporary, made, static_cast<uint32_t>(made_bytes), device);
+    free(made);
+    if (result < 0) {
+        text_table_failed("writing th10_font32.tmp", result);
+        return;
+    }
+    draw_progress(980u);
+
+    // Keep the Noto table as th10_font32_noto.bin, then install the new one;
+    // on a failure the Noto table goes back under its name.
+    bool moved_noto = false;
+    if (table_exists) {
+        result = remove_regular_if_present(noto);
+        if (result == 0)
+            result = sceIoRename(table, noto);
+        moved_noto = result >= 0;
+    }
+    if (result >= 0)
+        result = sceIoRename(temporary, table);
+    if (result >= 0)
+        result = sceIoSync(device, 0);
+    if (result < 0) {
+        if (moved_noto) {
+            remove_regular_if_present(table);
+            sceIoRename(noto, table);
+        }
+        remove_regular_if_present(temporary);
+        sceIoSync(device, 0);
+        text_table_failed("installing th10_font32.bin", result);
+        return;
+    }
+    draw_progress(1000u);
+    log_line("TEXT TABLE made from %s bytes=%u crc32=%08X noto_kept=%u read_us=%u "
+             "build_us=%u total_us=%u cpu=%d",
+             font, static_cast<unsigned int>(made_bytes), made_crc, moved_noto ? 1u : 0u,
+             static_cast<unsigned int>(read_end - start),
+             static_cast<unsigned int>(build_end - read_end),
+             static_cast<unsigned int>(sceKernelGetSystemTimeWide() - start),
+             scePowerGetCpuClockFrequencyInt());
+}
+
 int try_selfwrap(const char *appdir, const char *eboot_path,
                  const char *device, char *data_root,
                  size_t data_root_size)
@@ -1111,6 +1315,9 @@ int main(int argc, char **argv)
         log_line("XMB stale helper cleanup result=0x%08X/0x%08X",
                  static_cast<unsigned int>(stale_helper),
                  static_cast<unsigned int>(stale_temporary));
+
+    // Before the XMB step, so the helper path needs nothing of it.
+    make_text_table_if_asked(appdir, device);
 
     char data_root[kPathBytes];
     const int wrap_result = try_selfwrap(

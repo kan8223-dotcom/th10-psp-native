@@ -59,11 +59,13 @@ BAD_NAMES = {
     "thbgm.dat",
     "thbgm.fmt",
     "th10_font32.bin",   # only the pinned Noto table below; an MS Gothic one is personal
+    "th10_font32.tmp",   # the launcher's table being written
+    "msgothic.ttc",      # the user's MS Gothic (the launcher makes the table from it)
     "th10runtime.pbp",   # written by the launcher on the PSP
     "th10xmbhelper.pbp",
     "th10unified.log",
 }
-BAD_SUFFIXES = (".rpy", ".anm", ".std", ".ecl", ".msg", ".sht")
+BAD_SUFFIXES = (".rpy", ".anm", ".std", ".ecl", ".msg", ".sht", ".ttc")
 
 # th10.dat: a 16-byte header encrypted like ResourceArchive (key 0x1b,
 # step 0x37, block 16) that decrypts to "THA1".

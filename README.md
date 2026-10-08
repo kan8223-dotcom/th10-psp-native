@@ -46,7 +46,13 @@
 
 ゲーム中の文字は、EBOOT と同じフォルダの `th10_font32.bin` から描きます。配布物に入っている表は Noto Sans JP（SIL Open Font License 1.1）から作ったもので、そのまま使えます。
 
-原作と同じ MS ゴシックの字にしたい場合は、自分の Windows の MS ゴシックから表を作り、同じ名前で置き換えてください（手順は [tools/fonts/README.md](tools/fonts/README.md)。Python が必要です）。MS ゴシックから作った表は個人用です。再配布しないでください。新しい版に入れ替えるときは、作った表を上書きしないよう注意してください。
+原作と同じ MS ゴシックの字にしたい場合は、Windows の `C:\Windows\Fonts\msgothic.ttc` を `th10.dat` と同じフォルダにコピーしてから起動してください。起動したときに MS ゴシックから表を作り、`th10_font32.bin` を置き換えます（PSP-1000 で約 2 秒、進捗バーが出ます）。同梱の Noto 版は `th10_font32_noto.bin` という名前で残ります。
+
+- 新しい版に入れ替えて `th10_font32.bin` が Noto 版に戻っても、`msgothic.ttc` を置いたままなら次の起動で作り直します。
+- Noto 版に戻すときは、`msgothic.ttc` と `th10_font32.bin` を消し、`th10_font32_noto.bin` の名前を `th10_font32.bin` に変えます。
+- MS ゴシックでないファイルを `msgothic.ttc` という名前で置くと、起動のたびに理由を 4 秒表示して、今の表のまま進みます。
+- `msgothic.ttc` と、そこから作った表は個人用です。再配布しないでください。
+- PC で作ることもできます（[tools/fonts/README.md](tools/fonts/README.md)。Python が必要です）。Pillow 12.1.1 なら、PSP で作った表と同じものができます。
 
 ## 実機での数字
 
@@ -83,6 +89,8 @@ PC 上の確認用のビルド（ゲームの状態をトレースに書き出�
 - 冴風（Saekaze）さん — 風神録の Switch 移植（th10-switch）。この移植のきっかけと参考になりました。
 - M-cid（m-c/d）氏 — PSP Media Engine Custom Core
 - Daniil Cherednik 氏 — atracdenc（XMB の曲のエンコード）
+- The FreeType Project — FreeType（PSP 上で MS ゴシックから文字の表を作る）
+- Adobe / Google — Noto Sans CJK JP（同梱の文字の表の元）
 
 ## ライセンス
 

@@ -46,7 +46,13 @@ Saves and replays go to `save/` in the same folder.
 
 The game draws its text from `th10_font32.bin` in the EBOOT's folder. The release includes a table made from Noto Sans JP (SIL Open Font License 1.1); it works as it is.
 
-For the original game's MS Gothic look, make a table from the MS Gothic of your own Windows and put it in place of that file, under the same name ([tools/fonts/README.md](tools/fonts/README.md); needs Python). A table made from MS Gothic is for your own use only: never redistribute it. When you install a newer release, take care not to overwrite it.
+For the original game's MS Gothic look, copy `C:\Windows\Fonts\msgothic.ttc` from your Windows into the folder with `th10.dat`, then start the game. It makes a table from MS Gothic and puts it in place of `th10_font32.bin` (about 2 seconds on a PSP-1000, with a progress bar). The bundled Noto table stays as `th10_font32_noto.bin`.
+
+- If a newer release puts the Noto table back as `th10_font32.bin`, the next start makes the MS Gothic table again, as long as `msgothic.ttc` is still there.
+- To go back to Noto, delete `msgothic.ttc` and `th10_font32.bin`, and rename `th10_font32_noto.bin` to `th10_font32.bin`.
+- A file named `msgothic.ttc` that is not MS Gothic shows the reason for 4 seconds at each start, and the current table stays in use.
+- `msgothic.ttc` and a table made from it are for your own use only: never redistribute them.
+- A PC can make it too ([tools/fonts/README.md](tools/fonts/README.md); needs Python); with Pillow 12.1.1 it is the same table the PSP makes.
 
 ## Numbers measured on hardware
 
@@ -83,6 +89,8 @@ The code was written by AI; my part was directing it and several days of intense
 - Saekaze — the Touhou 10 Switch port (th10-switch), which started and informed this port
 - M-cid (m-c/d) — PSP Media Engine Custom Core
 - Daniil Cherednik — atracdenc (encodes the XMB music)
+- The FreeType Project — FreeType (makes the MS Gothic text table on the PSP)
+- Adobe / Google — Noto Sans CJK JP (the source of the bundled text table)
 
 ## License
 
