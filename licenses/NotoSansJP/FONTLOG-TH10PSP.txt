@@ -1,0 +1,58 @@
+TH10 PSP text table (th10_font32.bin): Noto Sans CJK JP modification log
+=========================================================================
+
+License and upstream identity
+-----------------------------
+
+Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font
+Name 'Source'. The table described here is a Modified Version of Noto Sans
+CJK JP and remains under the SIL Open Font License 1.1 in OFL.txt (next to
+this file). The MIT License of the rest of this project does not apply to
+it. The table carries no font name; the Reserved Font Name "Source" is not
+used.
+OFL.txt SHA-256: 1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9
+(the text published together with the source font below, unchanged)
+
+Upstream release: Noto CJK Sans 2.004 (2021-04-28)
+Release page: https://github.com/notofonts/noto-cjk/releases/tag/Sans2.004
+
+Source font
+-----------
+
+File: NotoSansJP-Regular.ttf (Noto Sans CJK JP 2.004, Regular)
+Size: 4,491,696 bytes
+SHA-256: 6ab1664d8adc20b19237ddc451c94e31f493cb851a1917242debf66f9af6da05
+Published at:
+  https://github.com/kan8223-dotcom/th08-psp-native/raw/540e48f7ca767f7278be6fce082e3e01208ba883/psp/assets/NotoSansJP-Regular.ttf
+  https://github.com/kan8223-dotcom/th08-psp-native/raw/540e48f7ca767f7278be6fce082e3e01208ba883/licenses/NotoSansJP/OFL.txt
+
+That file is itself a subset of Noto Sans CJK JP 2.004, made for the
+author's earlier PSP ports (TH06 to TH08). It is fixed by its SHA-256; its
+own build from the upstream font is not claimed to be byte-reproducible.
+
+Modified Version
+----------------
+
+File: th10_font32.bin
+  (in the repository: tools/fonts/th10_font32_noto.bin)
+Size: 1,015,544 bytes
+SHA-256: 60873ef26ffec905a4995aa9e0d8c568da3dc60db6e90c51b8b1a5cd5a6695b5
+Generator: tools/fonts/make_font_noto.py, with tools/fonts/charset_th10.bin
+Made with: Python 3.12.3, Pillow 12.1.1 (FreeType 2.14.1, libraqm 0.10.3,
+HarfBuzz 12.3.0), fontTools 4.62.1 (only to look up the character map).
+
+Modification summary:
+
+- keep only the 1,124 characters TH10's texts use (the Shift_JIS codes in
+  charset_th10.bin that decode as CP932);
+- render each at 32 px into an 8-bit coverage bitmap, using the half-width
+  forms (OpenType 'hwid') for single-byte codes and the full-width forms
+  ('fwid') for double-byte codes;
+- place the glyphs on MS Gothic's metrics, which the game's text layout
+  assumes: advance 16 or 32 px, baseline 28 px below the line top;
+- store them in the "T10F" table layout the game reads. No outlines, hints,
+  layout tables or names are kept.
+
+Other library versions may rasterize some pixels differently. The release
+uses the bytes above; tools/release/build_release.sh and
+tools/unified/check_no_original_assets.py check them by SHA-256.

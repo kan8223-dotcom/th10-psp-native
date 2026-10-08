@@ -14,14 +14,13 @@ One EBOOT covers the PSP-1000 and the PSP-2000 / 3000 / Go: at start it checks t
 - Your own copy of Touhou 10 **version 1.00a**:
   - `th10.dat` (27,696,219 bytes)
   - `thbgm.dat` (403,789,620 bytes)
-- The text table `th10_font32.bin`, which you make yourself (see "Text table").
 
 Data files with other sizes (other versions) are refused.
 
 ## Install
 
-1. Put the release's EBOOT.PBP in a folder under `PSP/GAME/` (for example `PSP/GAME/TH10PSP/`).
-2. Put `th10.dat`, `thbgm.dat` and `th10_font32.bin` in the same folder.
+1. Unpack the release ZIP and copy its `TH10PSP` folder to `PSP/GAME/` on the Memory Stick.
+2. Put `th10.dat` and `thbgm.dat` in that folder (`PSP/GAME/TH10PSP/`).
 3. Start it from the XMB.
 
 On the first start only, it makes the XMB icon, background and music (the first 27 seconds of the title screen theme) from your game data and writes them into the EBOOT. This takes about 30 seconds and shows a progress bar; do not turn the PSP off meanwhile.
@@ -44,10 +43,9 @@ Saves and replays go to `save/` in the same folder.
 
 ## Text table (th10_font32.bin)
 
-See [tools/fonts/README.md](tools/fonts/README.md). Two ways to make it:
+The game draws its text from `th10_font32.bin` in the EBOOT's folder. The release includes a table made from Noto Sans JP (SIL Open Font License 1.1); it works as it is.
 
-- **from Noto Sans JP (SIL OFL 1.1)**: may be shared under the OFL;
-- **from MS Gothic of your own Windows**: for your own use only; never redistribute it.
+For the original game's MS Gothic look, make a table from the MS Gothic of your own Windows and put it in place of that file, under the same name ([tools/fonts/README.md](tools/fonts/README.md); needs Python). A table made from MS Gothic is for your own use only: never redistribute it. When you install a newer release, take care not to overwrite it.
 
 ## Numbers measured on hardware
 
@@ -87,4 +85,4 @@ The code was written by AI; my part was directing it and several days of intense
 
 ## License
 
-The code written for this port is under the MIT License ([LICENSE](LICENSE)). The upstream reimplementation and the bundled components keep their own terms ([THIRD_PARTY.md](THIRD_PARTY.md)). The original game is © Team Shanghai Alice.
+The code written for this port is under the MIT License ([LICENSE](LICENSE)). The upstream reimplementation and the bundled components keep their own terms ([THIRD_PARTY.md](THIRD_PARTY.md)). The text table `th10_font32.bin` is a Modified Version of Noto Sans JP under the SIL Open Font License 1.1, not the MIT License ([licenses/NotoSansJP/](licenses/NotoSansJP/)). The original game is © Team Shanghai Alice.

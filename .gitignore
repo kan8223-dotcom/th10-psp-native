@@ -73,6 +73,8 @@ __pycache__/
 *.pyc
 # the font generators' character list (codes only, no glyphs)
 !tools/fonts/charset_th10.bin
+# the release's text table made from Noto Sans CJK JP (SIL OFL 1.1, not MS Gothic)
+!tools/fonts/th10_font32_noto.bin
 
 # ge4wrap build output
 native/psp/ge4wrap/bin/

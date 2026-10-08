@@ -9,7 +9,11 @@
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=$(mkdir -p "${1:-$ROOT/dist}" && cd "${1:-$ROOT/dist}" && pwd)
-VERSION=v1.0.0
+VERSION=v1.0.1
+# The text table that ships next to the EBOOT (Noto Sans CJK JP, SIL OFL 1.1):
+# licenses/NotoSansJP/FONTLOG-TH10PSP.txt.
+FONT_TABLE="$ROOT/tools/fonts/th10_font32_noto.bin"
+FONT_SHA256=60873ef26ffec905a4995aa9e0d8c568da3dc60db6e90c51b8b1a5cd5a6695b5
 BASE='-DTH10_EXTENDED_INLINE=0 -ffunction-sections'
 # PSP-2000/3000/Go: 64 MB, GE 4 MiB eDRAM mode, ME audio, SELECT recording.
 GO_FLAGS='-DTH10_REPLAY_ALIGN_FIX=1 -DTH10_PACING_NO_CATCHUP=1 -DTH10_DF_LEAN=1 -DTH10_FIXED_VERTEX=1 -DTH10_TRIG_MEMO=1 -DTH10_ANM_SCROLL_SKIP=1 -DTH10_SPRITE_ROT_RANGE=1 -DTH10_WINDOW_BREAKDOWN=1 -DTH10_ANM_VERTEX_CAP=32768 -DTH10_GE_NO_BACKBUFFER_BYTES=1 -DTH10_QUAD_INDEX=1 -DTH10_HOT_MOVE=1 -DTH10_FAST_ANGLE=1 -DTH10_FAST_SHOT=1 -DTH10_FAST_ALIGN=1 -DTH10_FAST_TIMER=1 -DTH10_FAST_BILLBOARD=1 -DTH10_FAST_PACK=1 -DTH10_FAST_FLOOR=1 -DTH10_FAST_FEATURES=1 -DTH10_FAST_OUTSIDE=1 -DTH10_FAST_EASING=1 -DTH10_GUARD_CLIP=1 -DTH10_FAST_RING=1 -DTH10_FAST_LASER=1 -DTH10_MISS_BREAKDOWN=1 -DTH10_TRANSITION_DRAW=1 -DTH10_FAST_EASING_INT=1 -DTH10_FAST_EASING_INLINE=1 -DTH10_FAST_ANIMATE=1 -DTH10_FAST_ANGLE_FLOAT=1 -DTH10_FAST_TEXT=1 -DTH10_FAST_STAGE_CULL=1 -DTH10_FAST_MODEL=1 -DTH10_TRANSFORM_MEMO=1 -DTH10_GUARD_NEAR=1 -DTH10_FAST_TEXT_UPLOAD=1 -DTH10_BULLET_GATE=1 -DTH10_FAST_TURN=1 -DTH10_FAST_ITEM=1 -DTH10_ITEM_POLAR_MEMO=1 -DTH10_FAST_BIND=1 -DTH10_TIMER_INLINE=1 -DTH10_FAST_CANCEL=1 -DTH10_FAST_PLAYFIELD=1 -DTH10_REC=1 -DTH10_BGM_PREFETCH=1 -DTH10_RESULT_KEEP_PREV=1 -DTH10_REPLAY_STAGE_LEAD=1 -DTH10_REPLAY_FAITH_CURSOR=1 -DTH10_FAST_RNG_UNIT=1 -DTH10_RENDER_FAST_BULLETS=1 -DTH10_RENDER_FAST_GE_STATE=1 -DTH10_WORLD_BAKE=1'
@@ -32,17 +36,19 @@ python3 "$ROOT/tools/unified/pack_unified_pbp.py" \
 python3 "$ROOT/tools/unified/audit_unified_pbp.py" "$OUT/EBOOT.PBP" \
   --psp1000-sha256 "$(sha256sum "$OUT/runtime_1000.pbp" | cut -c1-64)" \
   --psp2000plus-sha256 "$(sha256sum "$OUT/runtime_go.pbp" | cut -c1-64)"
-python3 "$ROOT/tools/unified/check_no_original_assets.py" "$OUT/EBOOT.PBP"
+echo "$FONT_SHA256  $FONT_TABLE" | sha256sum -c --quiet
+python3 "$ROOT/tools/unified/check_no_original_assets.py" "$OUT/EBOOT.PBP" "$FONT_TABLE"
 chmod 644 "$OUT/EBOOT.PBP"
 sha256sum "$OUT/EBOOT.PBP"
-# The release archive: the game folder with the EBOOT, the documents and every
-# license text the binaries need.
+# The release archive: the game folder with the EBOOT, the text table, the
+# documents and every license text the binaries and the table need.
 python3 - "$ROOT" "$OUT" "$VERSION" <<'PY'
 import sys, zipfile
 from pathlib import Path
 root, out, version = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
 files = {
     "EBOOT.PBP": out / "EBOOT.PBP",
+    "th10_font32.bin": root / "tools/fonts/th10_font32_noto.bin",
     "README.md": root / "README.md",
     "README_EN.md": root / "README_EN.md",
     "LICENSE": root / "LICENSE",
@@ -50,6 +56,8 @@ files = {
     "licenses/atracdenc-LGPL-2.1.txt": root / "native/third_party/atracdenc/LICENSE",
     "licenses/me-custom-core-MIT.md": root / "native/psp/third_party/me-custom-core/LICENSE.md",
     "licenses/th10-rebuilt.LICENSE": root / "th10_web/assets/vendor/th10-rebuilt.LICENSE",
+    "licenses/NotoSansJP/OFL.txt": root / "licenses/NotoSansJP/OFL.txt",
+    "licenses/NotoSansJP/FONTLOG-TH10PSP.txt": root / "licenses/NotoSansJP/FONTLOG-TH10PSP.txt",
 }
 for lic in sorted((root / "licenses").glob("*.txt")):
     files["licenses/" + lic.name] = lic

@@ -1,6 +1,6 @@
 // Font host with the GDI contract of th10_web/cpp/sdl/FontHost.cpp. TextOut
-// draws pre-rendered MS Gothic glyphs (th10_font32.bin next to th10.dat, made
-// on the user's PC from C:\Windows\Fonts\msgothic.ttc; personal use only)
+// draws pre-rendered glyphs (th10_font32.bin next to th10.dat: the release's
+// Noto table, or one made from the user's own MS Gothic with tools/fonts/)
 // with the same A4R4G4B4 blending as the SDL host. Without the file it draws
 // nothing, like the headless host always did.
 #include "../th10_web/cpp/platform/Fonts.hpp"
@@ -25,7 +25,7 @@ std::map<u32,std::unique_ptr<Object>> objects;u32 next=1,text_calls=0,missing_gl
 // count x {u16 sjis, u8 w, u8 h, i8 left, i8 top (from the ascender line),
 // u8 advance, u8 pad, u32 offset}; then 8-bit coverage.
 #if defined(__PSP__) && defined(TH10_VOLATILE_ARENA) && TH10_VOLATILE_ARENA
-using GlyphBytes=std::vector<u8,VolatileAllocator<u8>>;   // PSP-1000 lane: the 958 KB file outside the heap (heap when it does not fit)
+using GlyphBytes=std::vector<u8,VolatileAllocator<u8>>;   // PSP-1000 lane: the ~1 MB file outside the heap (heap when it does not fit)
 #else
 using GlyphBytes=std::vector<u8>;
 #endif

@@ -14,14 +14,13 @@
 - 東方風神録 **v1.00a** の原作データ（ご自身で正規に入手したもの）
   - `th10.dat`（27,696,219 バイト）
   - `thbgm.dat`（403,789,620 バイト）
-- 文字の表 `th10_font32.bin`。各自で作ります（下の「文字の表」）。
 
 大きさが違う版のデータは受け付けません。
 
 ## 入れ方
 
-1. リリースの EBOOT.PBP を `PSP/GAME/` の下の好きなフォルダ（例 `PSP/GAME/TH10PSP/`）に置く。
-2. 同じフォルダに `th10.dat`・`thbgm.dat`・`th10_font32.bin` を置く。
+1. リリースの ZIP を展開し、中の `TH10PSP` フォルダを、メモリースティックの `PSP/GAME/` にコピーする。
+2. 同じフォルダ（`PSP/GAME/TH10PSP/`）に `th10.dat` と `thbgm.dat` を置く。
 3. XMB から起動する。
 
 初回の起動だけ、原作データから XMB のアイコン・背景・曲（タイトル画面の曲の頭 27 秒）を作り、EBOOT に書き込みます。30 秒ほどかかり、その間は進捗バーが出ます。電源を切らないでください。
@@ -44,10 +43,9 @@
 
 ## 文字の表（th10_font32.bin）
 
-[tools/fonts/README.md](tools/fonts/README.md) を見てください。作り方は 2 通りあります。
+ゲーム中の文字は、EBOOT と同じフォルダの `th10_font32.bin` から描きます。配布物に入っている表は Noto Sans JP（SIL Open Font License 1.1）から作ったもので、そのまま使えます。
 
-- **Noto Sans JP（SIL OFL 1.1）から作る**：OFL の条件で共有できます。
-- **Windows の MS ゴシックから作る**：個人用です。再配布しないでください。
+原作と同じ MS ゴシックの字にしたい場合は、自分の Windows の MS ゴシックから表を作り、同じ名前で置き換えてください（手順は [tools/fonts/README.md](tools/fonts/README.md)。Python が必要です）。MS ゴシックから作った表は個人用です。再配布しないでください。新しい版に入れ替えるときは、作った表を上書きしないよう注意してください。
 
 ## 実機での数字
 
@@ -87,4 +85,4 @@ PC 上の確認用のビルド（ゲームの状態をトレースに書き出�
 
 ## ライセンス
 
-自分で書いた部分は MIT License です（[LICENSE](LICENSE)）。上流の再実装と同梱物は、それぞれの条件に従います（[THIRD_PARTY.md](THIRD_PARTY.md)）。原作の著作権は上海アリス幻樂団にあります。
+自分で書いた部分は MIT License です（[LICENSE](LICENSE)）。上流の再実装と同梱物は、それぞれの条件に従います（[THIRD_PARTY.md](THIRD_PARTY.md)）。文字の表 `th10_font32.bin` は Noto Sans JP の改変版で、MIT ではなく SIL Open Font License 1.1 に従います（[licenses/NotoSansJP/](licenses/NotoSansJP/)）。原作の著作権は上海アリス幻樂団にあります。

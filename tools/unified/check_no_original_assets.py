@@ -6,8 +6,9 @@ placeholders in its fixed ICON0/PIC1/SND0 slots (two transparent PNGs and about
 a second of silent ATRAC3) and empty ICON1/PIC0 slots. After the owner supplies
 valid original data, the PSP overwrites the three fixed slots in that *local*
 copy. Such a self-wrapped copy must never be committed or redistributed, nor
-may the original th10.dat/thbgm.dat, a font table generated from a system font,
-replays or saves.
+may the original th10.dat/thbgm.dat, a text table made from a system font
+(MS Gothic), replays or saves. The one text table that may ship is the release's
+Noto Sans CJK JP table (SIL OFL 1.1), accepted by its SHA-256 only.
 
 The size checks are deliberately coarse: any file of exactly th10.dat's or
 thbgm.dat's size is rejected, whatever its name or content.
@@ -20,6 +21,7 @@ Typical pre-commit use::
 
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
 import struct
@@ -56,7 +58,7 @@ BAD_NAMES = {
     "th10c.dat",
     "thbgm.dat",
     "thbgm.fmt",
-    "th10_font32.bin",   # generated per user (MS Gothic route: never redistribute)
+    "th10_font32.bin",   # only the pinned Noto table below; an MS Gothic one is personal
     "th10runtime.pbp",   # written by the launcher on the PSP
     "th10xmbhelper.pbp",
     "th10unified.log",
@@ -68,6 +70,18 @@ BAD_SUFFIXES = (".rpy", ".anm", ".std", ".ecl", ".msg", ".sht")
 THA1_MAGIC = 0x31414854
 TH10_DAT_SIZE = 27_696_219
 THBGM_DAT_SIZE = 403_789_620
+
+# tools/fonts/th10_font32_noto.bin (licenses/NotoSansJP/FONTLOG-TH10PSP.txt).
+# Any other "T10F" table, under any name, is rejected.
+TEXT_TABLE_MAGIC = b"T10F"
+NOTO_TABLE_SHA256 = "60873ef26ffec905a4995aa9e0d8c568da3dc60db6e90c51b8b1a5cd5a6695b5"
+
+
+def _is_noto_table(path: Path) -> bool:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest() == NOTO_TABLE_SHA256
+    except OSError:
+        return False
 
 
 def _tha1_header(head: bytes) -> bool:
@@ -161,7 +175,8 @@ def _check_pbp(data: bytes, label: str) -> None:
 
 
 def check_path(path: Path) -> str | None:
-    if path.name.casefold() in BAD_NAMES:
+    if path.name.casefold() in BAD_NAMES and not (
+            path.name.casefold() == "th10_font32.bin" and _is_noto_table(path)):
         return f"forbidden original/generated filename: {path.name}"
     if path.suffix.casefold() in BAD_SUFFIXES:
         return f"forbidden original/personal data type: {path.name}"
@@ -181,6 +196,8 @@ def check_path(path: Path) -> str | None:
 
     if _tha1_header(head):
         return "THA1 archive (th10.dat or a derivative)"
+    if head[:4] == TEXT_TABLE_MAGIC and not _is_noto_table(path):
+        return "text table that is not the release's Noto one (an MS Gothic table is personal)"
     if head[:4] == b"ZWAV" or size in (TH10_DAT_SIZE, THBGM_DAT_SIZE):
         return "original TH10 data (thbgm.dat/th10.dat size or ZWAV header)"
     if size > 300 * 1024 * 1024:
