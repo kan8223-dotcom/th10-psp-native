@@ -1,0 +1,102 @@
+# TH10 PSP hot code order (hot_order2: 2026-10-01 14_next2 の実機で弾の描画が 12.2→18.9ms に悪化した配置くじへの対策。弾の描画 1 発分の関数を約 8KB の連続区間に寄せ、add_angle を描画群へ移した)
+# 元: (TH08 r267/r269 の SORT(.text.sorted.*) 配置を移植)。
+# 1 行 1 パターン: 復号名 (psp-nm -C) の先頭一致の正規表現。上から順に .text の先頭へ並ぶ。
+# 命令キャッシュは 16 KB 2-way (8 KB で折り返す)。1 回のループが通る関数を実行順に
+# 連続させて、互いに追い出し合わないようにする (TH08 r267: 同じ仕事で calc ±40%)。
+# 選定: 実機 B 版の重いコールバックと PC サンプラー。
+# D 版 (2026-10-01): C 版の実機で描画側が悪化 (弾の描画 1.04→1.16、レイヤー2 0.56→0.69 ms/tick)。
+#   主要関数だけを抜き出して、同じ翻訳単位の呼び出し先 (apply/reserve/unsigned_number/sum 等) から
+#   引き離したため。objdump の jal 先で hot 群の外に残った呼び出し先を、呼び出し元の隣に足した。
+
+# --- 弾の更新でまれに通る大きい関数 (頻繁な群の手前に置き、群を分断しない)
+th10::EnemyBullet::process_commands\(
+th10::EnemyBullet::update_feature\(
+th10::\(anonymous namespace\)::mul_add\(
+th10::\(anonymous namespace\)::spawn_speed\(
+touhou::numeric::df::atan2_float\(
+touhou::numeric::df::div\(
+
+# --- 弾の更新 (1 発ごと, BulletsUpdate)
+th10::EnemyBulletManager::update\(
+th10::EnemyBullet::update\(
+th10::\(anonymous namespace\)::move\(th10::EnemyBulletMotion&
+th10::bullet_outside_playfield\(
+th10::browser::World::collide_player\(
+th10::browser::\(anonymous namespace\)::Bullets::collide_player\(
+th10::Player::collide_rectangle\(
+th10::polar\(
+touhou::numeric::df::sincos_scaled\(
+touhou::numeric::df::detail::sincos_reduced_table\(
+
+# --- ANM VM の更新の核 (弾・世界の VM, AnimationsWorld)
+th10::AnmManager::update_world\(
+non-virtual thunk to th10::browser::AnimationEngine::update\(
+th10::browser::AnimationEngine::update\(
+th10::\(anonymous namespace\)::animate\(th10::AnmVm&, th10::AnmEnvironment&\)
+th10::AnmVm::update\(
+th10::AnmVm::float_variable\(
+th10::AnmVm::integer_variable\(
+th10::AnmVm::float_reference\(
+th10::AnmVm::integer_reference\(
+th10::Timer::reset\(
+th10::\(anonymous namespace\)::interrupt\(th10::AnmVm&
+th10::Timer::tick\(
+th10::Timer::advance\(
+
+# --- Extended (どのループからも呼ばれる。更新と描画の境目)
+th10::Extended::from_float\(
+th10::Extended::to_float\(
+th10::operator\+\(th10::Extended
+th10::operator-\(th10::Extended
+th10::operator\*\(th10::Extended
+th10::operator/\(th10::Extended
+th10::operator<\(th10::Extended
+th10::operator==\(th10::Extended
+th10::Extended::from_int\(
+th10::Extended::truncate_int\(
+
+# --- 補間 (世界の VM で頻繁、弾ではほぼ通らない。弾の群と ANM 核の範囲を広げないよう Extended の後ろ)
+th10::easing\(
+th10::\(anonymous namespace\)::easing_as<
+th10::sample\(th10::Interpolator<float, 3u>&
+th10::sample\(th10::Interpolator<float, 2u>&
+th10::sample\(th10::Interpolator<int, 3u>&
+th10::sample\(th10::Interpolator<int, 1u>&
+
+# --- 描画 (BulletsDraw: 弾 1 発ごとに通る関数を先頭に連続で。約 9KB)
+th10::EnemyBulletManager::draw_layer\(
+th10::add_angle\(
+th10::\(anonymous namespace\)::wrap_angle\(
+th10::browser::\(anonymous namespace\)::Bullets::submit\(
+non-virtual thunk to th10::browser::AnimationEngine::draw\(
+th10::browser::AnimationEngine::draw\(
+th10::browser::GraphicsRenderer::GraphicsRenderer\(
+th10::AnmRenderer::draw\(
+th10::AnmRenderer::rotated_geometry\(
+th10::AnmRenderer::axis_geometry\(
+th10::AnmRenderer::submit\(
+th10::AnmRenderer::append\(
+# --- 描画 (まれに通る、または他のレイヤー)
+unsigned int th10::AnmRenderer::rotated_geometry\(
+unsigned int th10::AnmRenderer::axis_geometry\(
+th10::\(anonymous namespace\)::unsigned_number\(unsigned int\)
+th10::Extended::round_to_integer\(
+th10::AnmRenderer::apply_state\(
+th10::AnmRenderer::flush\(
+th10::AnmManager::draw_layer\(
+th10::browser::AnimationEngine::draw_layer\(
+th10::browser::GraphicsRenderer::draw_triangles\(
+touhou::sdl::Renderer::draw\(
+touhou::sdl::Renderer::draw_timed\(
+touhou::sdl::\(anonymous namespace\)::reserve\(
+touhou::sdl::\(anonymous namespace\)::apply\(touhou::sdl::State
+th10::browser::GraphicsRenderer::special_draw\(
+th10::AnmProjection::draw_billboard\(
+th10::AnmProjection::billboard_geometry\(
+th10::\(anonymous namespace\)::sum\(float, float, float\)
+th10::\(anonymous namespace\)::anchor\(unsigned int, th10::Extended
+th10::\(anonymous namespace\)::distance\(th10::Extended
+th10::sincos_float\(
+non-virtual thunk to th10::browser::GraphicsRenderer::project\(
+th10::browser::GraphicsRenderer::project\(
+th10::browser::\(anonymous namespace\)::product\(

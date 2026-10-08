@@ -1,0 +1,79 @@
+**/artifacts/
+**/node_modules/
+**/.cache/
+**/.npm-cache/
+**/.pip-cache/
+**/test-results/
+**/tools/node.exe
+**/tools/emsdk/
+**/tools/wasi-sdk*/
+[[]th08[]]*/
+[[]th10[]]*/
+*.exe
+*.dll
+*.wasm
+*.o
+*.obj
+*.a
+*.bin
+*.dat
+*.wav
+*.ogg
+*.flac
+*.rpy
+*.rpyx
+score*.dat
+*.cfg
+*.log
+.env
+.npmrc
+
+# ---- TH10 PSP port (branch psp-port) ----
+# Build outputs: native/ CMake trees (native/build*), PSP make objects,
+# the me-custom-core CMake build (psp_ge/mecc), ELF/EBOOT/PRX, make stamps.
+build*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+native/psp/obj*/
+native/psp_ge/obj*/
+native/psp_ge/mecc/
+native/psp_ge/link_config.txt
+*.d
+*.elf
+*.map
+*.PBP
+*.pbp
+*.SFO
+*.prx
+# The Slim+/Go GE 4 MiB wrapper is a checked build input (psp_ge/Makefile
+# ge4-check, sha256 3dc5c753...); keep only this one PRX.
+!native/psp/ge4wrap_texv1.prx
+# EBOOT staging and device results (kept outside the repository).
+deploy/
+results/
+**/PSP/GAME/
+# Game data and fonts: never commit or distribute. th10.dat / thbgm.dat are
+# covered by *.dat above; th10_font32.bin is a personal-use font made from
+# msgothic.
+th10_font*.bin
+msgothic*
+*.ttc
+# Saves and replays (provenance rules; *.rpy is above).
+savedata/
+SAVEDATA/
+# Device logs, recordings and scratch.
+*.avi
+*.orig
+*.rej
+*.bak
+*~
+__pycache__/
+*.pyc
+# the font generators' character list (codes only, no glyphs)
+!tools/fonts/charset_th10.bin
+
+# ge4wrap build output
+native/psp/ge4wrap/bin/
+native/psp/ge4wrap/src/exports.c
