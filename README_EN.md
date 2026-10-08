@@ -84,6 +84,9 @@ The code was written by AI; my part was directing it and several days of intense
 
 ## Thanks
 
+<a href="https://github.com/YomotsuHisami"><img src="https://github.com/YomotsuHisami.png" width="64" alt="YomotsuHisami"></a>
+<a href="https://github.com/saekaze"><img src="https://github.com/saekaze.png" width="64" alt="Saekaze"></a>
+
 - Team Shanghai Alice / ZUN — the original game
 - YomotsuHisami — the Touhou 10 reimplementation ([YomotsuHisami/th10](https://github.com/YomotsuHisami/th10))
 - Saekaze — the Touhou 10 Switch port (th10-switch), which started and informed this port

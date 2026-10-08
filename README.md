@@ -84,6 +84,9 @@ PC 上の確認用のビルド（ゲームの状態をトレースに書き出�
 
 ## 謝辞
 
+<a href="https://github.com/YomotsuHisami"><img src="https://github.com/YomotsuHisami.png" width="64" alt="YomotsuHisami"></a>
+<a href="https://github.com/saekaze"><img src="https://github.com/saekaze.png" width="64" alt="Saekaze"></a>
+
 - 上海アリス幻樂団 / ZUN — 原作
 - YomotsuHisami 氏 — 風神録の再実装（[YomotsuHisami/th10](https://github.com/YomotsuHisami/th10)）
 - 冴風（Saekaze）さん — 風神録の Switch 移植（th10-switch）。この移植のきっかけと参考になりました。
