@@ -22,9 +22,9 @@ Data files with other sizes (other versions) are refused.
 
 1. Unpack the release ZIP and copy its `TH10PSP` folder to `PSP/GAME/` on the Memory Stick.
 2. Put `th10.dat` and `thbgm.dat` in that folder (`PSP/GAME/TH10PSP/`).
-3. Start it from the XMB.
+3. Under Game on the XMB, an item with no icon and no title appears: start it. Back on the XMB afterwards, the item has its icon, background and music.
 
-On the first start only, it makes the XMB icon, background and music (the first 27 seconds of the title screen theme) from your game data and writes them into the EBOOT. This takes about 30 seconds and shows a progress bar; do not turn the PSP off meanwhile.
+The icon, background and music (the first 27 seconds of the title screen theme) are made from your game data on the first start only and written into the EBOOT. This takes about 30 seconds and shows a progress bar; do not turn the PSP off meanwhile.
 
 The release contains no image or sound made from the original game (only transparent images and silence). After that first start the EBOOT holds material made from your data: do not redistribute it.
 
