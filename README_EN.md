@@ -11,6 +11,7 @@ One EBOOT covers the PSP-1000 and the PSP-2000 / 3000 / Go: at start it checks t
 ## Requirements
 
 - A PSP (1000 / 2000 / 3000 / Go) with ARK-5. Tested on a PSP Go and a PSP-1000, both with ARK-5.
+- On a PSP-2000 / 3000 / Go, set this game's "Use Extra Memory" to "Max" in the ARK-5 settings. With "Default" or "Off" it may fail to start. (This does not apply to the PSP-1000.)
 - Your own copy of Touhou 10 **version 1.00a**:
   - `th10.dat` (27,696,219 bytes)
   - `thbgm.dat` (403,789,620 bytes)
