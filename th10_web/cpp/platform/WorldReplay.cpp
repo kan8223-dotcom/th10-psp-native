@@ -34,7 +34,12 @@ i32 World::update_replay(){Gameplay env(*this);return state.replay->update_input
 i32 World::replay_frame_action(){Gameplay env(*this);return state.replay->frame_action(env,true);}
 i32 World::draw_replay(){Gameplay env(*this);return state.replay->draw(env,true);}
 void World::finish_replay(i32 clear){Gameplay env(*this);state.replay->finish_recording(clear,env);}
-Replay* World::preview(const char* name){auto* entry=new(std::malloc(sizeof(Preview))) Preview(scores.files,state.game.flags,previews);if(entry->document.load(name)){entry->~Preview();std::free(entry);return nullptr;}entry->document.value.mode=2;previews=entry;return &entry->document.value;}
+Replay* World::preview(const char* name){auto* entry=new(std::malloc(sizeof(Preview))) Preview(scores.files,state.game.flags,previews);if(entry->document.load(name)){entry->~Preview();std::free(entry);return nullptr;}entry->document.value.mode=2;
+    // th10_port: the result screen's slot list reads only the info block. Keep a
+    // copy and free the file: after Extra the stage is still loaded, and four
+    // whole replays (1.28 MB) left too little for the save itself (PSP-1000).
+    std::memcpy(&entry->info,entry->document.value.info,sizeof(ReplayInfo));entry->document.close();entry->document.memory.clear();entry->document.value.initialize();entry->document.value.mode=2;entry->document.value.info=&entry->info;
+    previews=entry;return &entry->document.value;}
 void World::release_replay(Replay* replay){if(!replay)return;for(auto** next=&previews;*next;next=&(*next)->next){auto* entry=*next;if(&entry->document.value==replay){*next=entry->next;entry->~Preview();std::free(entry);return;}}if(replay==state.replay){destroy_replay(replay);return;}__builtin_trap();}
 void World::save_replay(const char* file,const char* name){const auto tail=motion.playing?std::vector<u8>{}:motion.trailer(10);if((motion.used()&&!motion.playing&&tail.empty())||replay_writer.save(*state.replay,file,name,tail))fail();}
 }

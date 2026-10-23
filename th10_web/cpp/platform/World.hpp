@@ -16,7 +16,7 @@ struct World final:HudActions,CallbackReceiver {
     PlayerProfile* cached_profile=nullptr;ReplayDocument replay_files;MemoryPool replay_memory;
     ReplayWriter replay_writer;ReplayCalendar& calendar;
     touhou::input::MotionTrack& motion=state.motion;
-    struct Preview {ReplayDocument document;Preview* next;Preview(FileSystem& files,u32 flags,Preview* next):document(files,flags),next(next){}};
+    struct Preview {ReplayDocument document;Preview* next;ReplayInfo info{};Preview(FileSystem& files,u32 flags,Preview* next):document(files,flags),next(next){}};
     Preview* previews=nullptr;
     i32 new_game=0,loader_stop=0,loader_running=0,resource_drawing=-1,resource_updating=-1,pending_upload=0;
     float measured_fps=60;bool loading=false;bool always_hitbox=false;i32 error=0;

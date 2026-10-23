@@ -16,7 +16,10 @@ struct ResourceWriter {
 // 0x4359b0. Only complete output bytes are returned. The decoder supplies
 // zero bits past EOF, completing the trailing 14-bit zero terminator.
 u8* encode_lzss(const u8* source,i32 length,u32& packed_length,LzssSearch search,CodecMemory& memory){
-    auto* output=memory.allocate_bytes(static_cast<u32>(length)*2);if(!output)return nullptr;packed_length=0;search.initialize();ResourceWriter writer{output};i32 cursor=0,available=0;while(cursor<length&&available<18)search.dictionary[++available]=source[cursor++];
+    // th10_port: a literal costs 9 bits and a match of 3..18 bytes 18, so the
+    // output never exceeds 9/8 of the input plus the 14-bit terminator. The
+    // original's length*2 buffer made a long replay's save need twice its size.
+    auto* output=memory.allocate_bytes(static_cast<u32>(length)+static_cast<u32>(length)/8+4);if(!output)return nullptr;packed_length=0;search.initialize();ResourceWriter writer{output};i32 cursor=0,available=0;while(cursor<length&&available<18)search.dictionary[++available]=source[cursor++];
     u32 head=1,match=0,match_length=0;
     while(available>0){if(match_length>static_cast<u32>(available))match_length=available;u32 consumed;if(match_length<3){writer.bit(1);writer.bits(search.dictionary[head],8);consumed=1;}else{writer.bit(0);writer.bits(match,13);writer.bits(match_length-3,4);consumed=match_length;}
         while(consumed--){const auto tail=(head+18)&8191;search.remove(tail);if(cursor<length)search.dictionary[tail]=source[cursor++];else --available;head=(head+1)&8191;if(available)match_length=search.insert(head,match);}
