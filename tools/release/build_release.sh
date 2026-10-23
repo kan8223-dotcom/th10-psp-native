@@ -9,7 +9,7 @@
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=$(mkdir -p "${1:-$ROOT/dist}" && cd "${1:-$ROOT/dist}" && pwd)
-VERSION=v1.1.0
+VERSION=v1.1.1
 # The text table that ships next to the EBOOT (Noto Sans CJK JP, SIL OFL 1.1):
 # licenses/NotoSansJP/FONTLOG-TH10PSP.txt.
 FONT_TABLE="$ROOT/tools/fonts/th10_font32_noto.bin"
